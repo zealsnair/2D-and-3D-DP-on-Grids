@@ -1,0 +1,114 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const int INF = 1e9;
+
+// **🔹 Memoization Approach (Top-Down DP)**
+int rec(int i, int j, vector<vector<int>>& matrix, vector<vector<int>>& dp) {
+    if (j < 0 || j >= matrix[0].size()) return INF; // Out of bounds
+    if (i == 0) return matrix[0][j]; // Base case: first row
+
+    if (dp[i][j] != -1) return dp[i][j];
+
+    int u = matrix[i][j] + rec(i - 1, j, matrix, dp);      // Up
+    int ld = matrix[i][j] + rec(i - 1, j - 1, matrix, dp); // Left Diagonal
+    int rd = matrix[i][j] + rec(i - 1, j + 1, matrix, dp); // Right Diagonal
+
+    return dp[i][j] = min({u, ld, rd});
+}
+
+int minFallingPathSumMemo(vector<vector<int>>& matrix) {
+    int n = matrix.size();
+    vector<vector<int>> dp(n, vector<int>(n, -1));
+    int mini = INF;
+    for (int j = 0; j < n; j++) {
+        mini = min(mini, rec(n - 1, j, matrix, dp));
+    }
+    return mini;
+}
+
+// **🔹 Tabulation Approach (Bottom-Up DP)**
+int minFallingPathSumTab(vector<vector<int>>& matrix) {
+    int n = matrix.size();
+    vector<vector<int>> dp(n, vector<int>(n, 0));
+
+    // Base case: Copy the first row
+    for (int j = 0; j < n; j++) {
+        dp[0][j] = matrix[0][j];
+    }
+
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            int u = matrix[i][j] + dp[i - 1][j]; // Up
+
+            int ld = matrix[i][j];
+            if (j > 0) ld += dp[i - 1][j - 1]; // Left Diagonal
+            else ld += INF;
+
+            int rd = matrix[i][j];
+            if (j + 1 < n) rd += dp[i - 1][j + 1]; // Right Diagonal
+            else rd += INF;
+
+            dp[i][j] = min({u, ld, rd});
+        }
+    }
+
+    return *min_element(dp[n - 1].begin(), dp[n - 1].end());
+}
+
+// **🔹 Space-Optimized Approach**
+int minFallingPathSumSpaceOptimized(vector<vector<int>>& matrix) {
+    int n = matrix.size();
+    vector<int> prev(n);
+
+    // Base case: Copy the first row
+    for (int j = 0; j < n; j++) {
+        prev[j] = matrix[0][j];
+    }
+
+    for (int i = 1; i < n; i++) {
+        vector<int> curr(n);
+        for (int j = 0; j < n; j++) {
+            int u = matrix[i][j] + prev[j]; // Up
+
+            int ld = matrix[i][j];
+            if (j > 0) ld += prev[j - 1]; // Left Diagonal
+            else ld += INF;
+
+            int rd = matrix[i][j];
+            if (j + 1 < n) rd += prev[j + 1]; // Right Diagonal
+            else rd += INF;
+
+            curr[j] = min({u, ld, rd});
+        }
+        prev = curr;
+    }
+
+    return *min_element(prev.begin(), prev.end());
+}
+
+// **🔹 Main function to take user input**
+int main() {
+    int n;
+    cout << "Enter the size of the matrix (n x n): ";
+    cin >> n;
+
+    if (n <= 0) {
+        cout << "Invalid matrix size." << endl;
+        return 0;
+    }
+
+    vector<vector<int>> matrix(n, vector<int>(n));
+    cout << "Enter the matrix values row by row:" << endl;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            cin >> matrix[i][j];
+        }
+    }
+
+    cout << "\nMemoization Approach: " << minFallingPathSumMemo(matrix) << endl;
+    cout << "Tabulation Approach: " << minFallingPathSumTab(matrix) << endl;
+    cout << "Space Optimized Approach: " << minFallingPathSumSpaceOptimized(matrix) << endl;
+
+    return 0;
+}
