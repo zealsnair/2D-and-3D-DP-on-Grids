@@ -1,0 +1,88 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const int INF = 1e9;
+
+// **🔹 Memoization Approach (Top-Down DP)**
+int f(int i, int j, vector<vector<int>> &triangle, vector<vector<int>> &dp) {
+    if (i == triangle.size() - 1) return triangle[i][j]; // Base case
+    if (dp[i][j] != -1) return dp[i][j];
+
+    int down = triangle[i][j] + f(i + 1, j, triangle, dp);
+    int diagonal = triangle[i][j] + f(i + 1, j + 1, triangle, dp);
+
+    return dp[i][j] = min(down, diagonal);
+}
+
+int minimumTotalMemo(vector<vector<int>> &triangle) {
+    int n = triangle.size();
+    vector<vector<int>> dp(n, vector<int>(n, -1));
+    return f(0, 0, triangle, dp);
+}
+
+// **🔹 Tabulation Approach (Bottom-Up DP)**
+int minimumTotalTab(vector<vector<int>> &triangle) {
+    int n = triangle.size();
+    vector<vector<int>> dp(n, vector<int>(n, INF));
+
+    // **Initialize last row (Base Case)**
+    for (int j = 0; j < n; j++) dp[n - 1][j] = triangle[n - 1][j];
+
+    // **Fill DP table bottom-up**
+    for (int i = n - 2; i >= 0; i--) {
+        for (int j = 0; j <= i; j++) {
+            int down = triangle[i][j] + dp[i + 1][j];
+            int diagonal = triangle[i][j] + dp[i + 1][j + 1];
+            dp[i][j] = min(down, diagonal);
+        }
+    }
+    return dp[0][0];
+}
+
+// **🔹 Space Optimized Approach**
+int minimumTotalSpaceOptimized(vector<vector<int>> &triangle) {
+    int n = triangle.size();
+    vector<int> prev(n);
+
+    // **Initialize last row**
+    for (int j = 0; j < n; j++) prev[j] = triangle[n - 1][j];
+
+    // **Iterate from second last row to top**
+    for (int i = n - 2; i >= 0; i--) {
+        vector<int> curr(n);
+        for (int j = 0; j <= i; j++) {
+            int down = triangle[i][j] + prev[j];
+            int diagonal = triangle[i][j] + prev[j + 1];
+            curr[j] = min(down, diagonal);
+        }
+        prev = curr;
+    }
+    return prev[0];
+}
+
+// **🔹 Main function to take user input**
+int main() {
+    int n;
+    cout << "Enter the number of rows in the triangle: ";
+    cin >> n;
+
+    if (n <= 0) {
+        cout << "Invalid number of rows." << endl;
+        return 0;
+    }
+
+    vector<vector<int>> triangle(n);
+    cout << "Enter the triangle values row by row:" << endl;
+    for (int i = 0; i < n; ++i) {
+        triangle[i].resize(i + 1);
+        for (int j = 0; j <= i; ++j) {
+            cin >> triangle[i][j];
+        }
+    }
+
+    cout << "\nMemoization Approach: " << minimumTotalMemo(triangle) << endl;
+    cout << "Tabulation Approach: " << minimumTotalTab(triangle) << endl;
+    cout << "Space Optimized Approach: " << minimumTotalSpaceOptimized(triangle) << endl;
+
+    return 0;
+}
